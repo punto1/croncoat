@@ -26,11 +26,10 @@ logger = logging.getLogger('croncoat')
 class CronWrapper(object):
     def __init__(self, sys_args, scriptname, configpath):
         self.parse_ini(configpath) # self.cfg is set with configparser
-        handler = logging.FileHandler(self.cfg.get('Mail', 'logfile'))
-        handler.setLevel( eval(self.cfg.get('Mail', 'loglevel', 'logging.INFO')) )
+        handler = logging.StreamHandler() #console handler
+        handler.setLevel( eval(self.cfg.get('Mail', 'loglevel', 'logging.ERROR')) )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-        logger.propagate = False
         logger.info( "croncoat arguments: %s" %str(sys_args).replace("Namespace(", "").replace(")", "") )
         self.scriptname = scriptname
         self.subjectname = "cc"
@@ -44,8 +43,7 @@ class CronWrapper(object):
     def parse_ini(self, configpath):
         default_configvalues = {'use_sendmailfallback': False,
                                 'sendmail_path': '/usr/sbin/sendmail',
-                                'logfile': '/var/log/croncoat.log',
-                                'loglevel': 'logging.INFO'}
+                                'loglevel': 'logging.ERROR'}
         try:
             self.cfg = ConfigParser.SafeConfigParser(defaults=default_configvalues)
             fname = os.path.realpath(configpath)
@@ -81,8 +79,7 @@ pass=
 fromaddr=
 use_sendmailfallback=True
 sendmail_path=/usr/sbin/sendmail
-logfile=/var/log/croncoat.log
-loglevel=logging.INFO
+loglevel=logging.ERROR
 
 """.format(scriptname))
     
