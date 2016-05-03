@@ -22,7 +22,7 @@ from croncoat import __version__, __scriptname__
 
 class MyParser(argparse.ArgumentParser):
     """custom parser class so I can output help whenever wrong / bad / no arguments are supplied"""
-#  http://stackoverflow.com/questions/4042452/display-help-message-with-python-argparse-when-script-is-called-without-any-argu
+    #  http://stackoverflow.com/questions/4042452/display-help-message-with-python-argparse-when-script-is-called-without-any-argu
     def error(self, message):
         sys.stderr.write('error: %s\n\n' % message)
         self.print_help()
