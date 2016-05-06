@@ -23,6 +23,7 @@ logging.basicConfig(level=logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('croncoat')
 
+
 class CronWrapper(object):
     def __init__(self, sys_args, scriptname, configpath):
         self.parse_ini(configpath) # self.cfg is set with configparser
@@ -40,6 +41,7 @@ class CronWrapper(object):
         self.sys_args = sys_args
         self.mailer = MailBackend(self.cfg)
 
+
     def parse_ini(self, configpath):
         default_configvalues = {'use_sendmailfallback': False,
                                 'sendmail_path': '/usr/sbin/sendmail',
@@ -52,6 +54,7 @@ class CronWrapper(object):
             msg = "config file %s could not be parsed, gave exception: %s" %(configpath, str(e))
             logger.error(msg)
             print msg
+
 
     def run(self):
         sys_args = self.sys_args
@@ -66,6 +69,7 @@ class CronWrapper(object):
                 self.handle_success()
         elif sys_args.emails:
             self.handle_test_email()
+
 
     @staticmethod
     def _ini_string(scriptname):
@@ -82,10 +86,12 @@ sendmail_path=/usr/sbin/sendmail
 loglevel=logging.ERROR
 
 """.format(scriptname))
+
     
     @staticmethod
     def print_ini(scriptname):
         print CronWrapper._ini_string(scriptname)
+
 
     def handle_success(self):
         sys_args = self.sys_args; cmd = self.cmd
@@ -95,6 +101,7 @@ loglevel=logging.ERROR
         logger.info("cmd: %s | result: %s " %(self.sys_args.cmd, subj_elem))
         if sys_args.verbose:
             self.handle_general(subj_elem=subj_elem, content_elem=content_elem);
+
 
     def handle_general(self, subj_elem, content_elem):
         sys_args = self.sys_args; cmd = self.cmd
@@ -110,6 +117,7 @@ loglevel=logging.ERROR
         else:
             print out_str
 
+
     def handle_timeout(self):
         """Called if a command exceeds its running time."""
         sys_args = self.sysargs; cmd = self.cmd
@@ -117,7 +125,8 @@ loglevel=logging.ERROR
         subj_elem= 'timeout'
         logger.error("cmd: %s | result: %s " %(self.sys_args.cmd, subj_elem))
         self.handle_general(subj_elem=subj_elem, content_elem=content_elem);
-        sys.exit(1)
+        #sys.exit(1)
+
 
     def handle_error(self):
         """Called when a command did not finish successfully."""
@@ -126,7 +135,8 @@ loglevel=logging.ERROR
         subj_elem= 'failure'
         logger.info("cmd: %s | result: %s " %(self.sys_args.cmd, subj_elem))
         self.handle_general(subj_elem=subj_elem, content_elem=content_elem);
-        sys.exit(1)
+        sys.exit(-1)
+
 
     def handle_test_email(self):
         subject='%s (%s): Testing' % \
@@ -139,7 +149,6 @@ loglevel=logging.ERROR
         """Sends an email via MailBackend (python email lib there)."""
         emails = self.sys_args.emails
         emails = emails.split(',')
-
         for toaddr in emails:
             emailMsg = email.MIMEMultipart.MIMEMultipart('mixed')
             emailMsg['To'] = toaddr
@@ -147,4 +156,4 @@ loglevel=logging.ERROR
             emailMsg['Subject'] = subject.replace('"', "'")
             emailMsg.attach(email.mime.Text.MIMEText(content, _charset='utf-8'))
             self.mailer.sendmail(emailMsg)
-
+        self.mailer.__exit__()
