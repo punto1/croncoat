@@ -64,7 +64,7 @@ class CronWrapper(object):
             self.cmd.Run()
             self.ts_end = datetime.utcnow()
             if self.cmd.returncode != 0:
-                logger.error("error! Error code: %" %self.cmd.returncode)
+                logger.error("error! Error code: %s" %self.cmd.returncode)
                 self.handle_error()
             elif Helper.is_time_exceeded(self.sys_args, self.cmd):
                 self.handle_timeout()
