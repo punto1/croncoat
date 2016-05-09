@@ -1,3 +1,13 @@
+Fork comments punto1:
+===========================================
+Reasons of existence for this fork:
+* added a --config parameter to call croncoat with a config on a non-default location
+* added logging
+* added sendmail as a fallback if connection to (external) smtp fails
+
+End fork comments
+===========================================
+
 [![build status](https://travis-ci.org/MatthiasKauer/croncoat.png?branch=master)](https://travis-ci.org/MatthiasKauer/croncoat)
 **Note: Tests aren't very extensive yet. In particular: Email sending is not tested (ideas and help appreciated). It does work in practice though. On my machine ;)**
 
