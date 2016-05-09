@@ -60,7 +60,12 @@ Call 'croncoat --ini' for an example layout of the .ini file" %scriptpath
             
     def __exit__(self):
         self.logger.debug("exiting MailBackend")
-        self.smtp.quit()
+        try:
+            self.smtp.close()
+            self.smtp.quit()
+        except Exception, e:
+            pass # apparently not even logged in yet
+
 
 
 

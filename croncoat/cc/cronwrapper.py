@@ -18,6 +18,7 @@ import ConfigParser
 from croncoat.cc.expiringcommand import ExpiringCommand
 from croncoat.cc.mailbackend import MailBackend
 from croncoat.cc.helper import Helper
+from datetime import datetime, timedelta
 
 logging.basicConfig(level=logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -27,7 +28,7 @@ logger = logging.getLogger('croncoat')
 class CronWrapper(object):
     def __init__(self, sys_args, scriptname, configpath):
         self.parse_ini(configpath) # self.cfg is set with configparser
-        handler = logging.StreamHandler() #console handler
+        handler = logging.StreamHandler() #logging.StreamHandler(sys.stdout) #console handler
         handler.setLevel( eval(self.cfg.get('Mail', 'loglevel', 'logging.ERROR')) )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
@@ -53,15 +54,17 @@ class CronWrapper(object):
         except Exception, e:
             msg = "config file %s could not be parsed, gave exception: %s" %(configpath, str(e))
             logger.error(msg)
-            print msg
 
 
     def run(self):
         sys_args = self.sys_args
         if sys_args.cmd:
+            self.ts_start = datetime.utcnow()
             self.cmd = ExpiringCommand( sys_args.cmd, sys_args.time)
             self.cmd.Run()
+            self.ts_end = datetime.utcnow()
             if self.cmd.returncode != 0:
+                logger.error("error! Error code: %" %self.cmd.returncode)
                 self.handle_error()
             elif Helper.is_time_exceeded(self.sys_args, self.cmd):
                 self.handle_timeout()
@@ -99,6 +102,7 @@ loglevel=logging.ERROR
         content_elem = 'RAN COMMAND SUCCESSFULLY'
         subj_elem='success'
         logger.info("cmd: %s | result: %s " %(self.sys_args.cmd, subj_elem))
+        logger.debug("stderr: %s \nstdout: %s" %(self.cmd.stderr, self.cmd.stdout))
         if sys_args.verbose:
             self.handle_general(subj_elem=subj_elem, content_elem=content_elem);
 
@@ -106,16 +110,15 @@ loglevel=logging.ERROR
     def handle_general(self, subj_elem, content_elem):
         sys_args = self.sys_args; cmd = self.cmd
         out_str = Helper.render_email_template('%s %s: ' % \
-                (self.scriptname, content_elem), sys_args, cmd)
+                (self.scriptname, content_elem), sys_args, cmd, self.ts_start, self.ts_end)
         subj_str='%s (%s): %s [%s]' % \
                 (sys_args.cmd[:20],
                             platform.node().capitalize(), subj_elem, self.scriptname)
-
         if sys_args.emails:
             self.send_email(subject=subj_str, content=out_str)
             #  self.handle_general(subj_str=subj_str, content_str=out_str);
         else:
-            print out_str
+            log.info(out_str)
 
 
     def handle_timeout(self):
@@ -134,6 +137,7 @@ loglevel=logging.ERROR
         content_elem = 'DETECTED FAILURE OR ERROR OUTPUT FOR THE COMMAND'
         subj_elem= 'failure'
         logger.info("cmd: %s | result: %s " %(self.sys_args.cmd, subj_elem))
+        logger.info("stderr: %s \nstdout: %s" %(self.cmd.stderr, self.cmd.stdout))
         self.handle_general(subj_elem=subj_elem, content_elem=content_elem);
         sys.exit(-1)
 

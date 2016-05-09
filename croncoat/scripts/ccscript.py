@@ -56,39 +56,32 @@ Print output of successful command
 #  if __name__ == '__main__':
 def main(input_args=None):
     parser = MyParser(prog=__scriptname__, description=desc_str, formatter_class=argparse.RawTextHelpFormatter)
-
     parser.add_argument('-c', '--cmd',
                         help='Run a command. Could be `%s -c "ls -la"`. No command => test email is sent.' % __scriptname__
                         )
-
     parser.add_argument('-e', '--emails',
                         help='Send email to the following addresses if the command crashes or exceeds timeout. '
                         "Uses Python's email library to send emails (therefore no user names"
                         "unlike original cronwrap). "
                         "If this is not set, only output to stdout."
                         )
-
     parser.add_argument('-t', '--time',
                         help='Set the maximum running time. '
                         'If this time is reached, the script will be killed and an alert email will be sent. '
                         "If the script is killed stdout/stderr cannot be captured at this time! "
                         "The default is 1 hour `-t 1h`. Possible values include: `-t 2h`,`-t 5m`, `-t 30s`."
                         )
-
     parser.add_argument('--print-ini', '--print-config', nargs='?', default=False,
                         help='Print the configuration file format. '
                             'This can be redirected to a file name to have a config skeleton.'
                         )
-
     parser.add_argument('--config', '--ini', '-i', default=False,
                         help='use an .ini file with custom name and path  '
                         "(not the default .croncoat.ini in users' home directory"
                         )
-
     parser.add_argument('-v', '--verbose',
                         nargs='?', default=False,
                         help='Will send an email / print to stdout even on successful run.')
-
     sys_args = parser.parse_args(input_args)
     if(sys_args.print_ini is not False):
         CronWrapper.print_ini(__scriptname__)
